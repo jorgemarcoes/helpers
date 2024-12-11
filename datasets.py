@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd
+
 datasets_df = pd.read_csv('https://www.cs.ucr.edu/~eamonn/time_series_data_2018/DataSummary.csv')
 datasets128 = datasets_df['Name'].values
 
