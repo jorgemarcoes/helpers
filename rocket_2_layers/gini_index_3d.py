@@ -1,3 +1,4 @@
+import numpy as np
 def gini_index_3d(X):
     """
     Compute the Gini Index along the last axis of a 3D array.
