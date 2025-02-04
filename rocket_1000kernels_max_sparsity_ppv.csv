@@ -1,4 +1,4 @@
-Dataset,Max_Sparsity_PPVs
+Dataset,Min_PPV
 ACSF1,0.2602
 Adiac,0.3693
 ArrowHead,0.3386
