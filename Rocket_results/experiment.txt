@@ -1,0 +1,26 @@
+
+    # take a sample of max 500 time series
+    X_training = X_training[:500]
+
+    #######################################################################################
+    # Generate kernels and transform
+    #######################################################################################
+
+    signal_length = X_training.shape[-1]
+    kernels = generate_kernels(signal_length,num_features)
+    X_training_transform = apply_kernels(X_training, kernels)
+
+    ppvs = X_training_transform[:,::2]
+    #ppvs = ppvs.flatten()
+    ppvs = 0.1 * 0.1 + 0.9*ppvs
+    #ppvs.sort() #low to high
+    sparsity_PPV = 1/ppvs
+
+    max_sparsity_PPV = np.max(sparsity_PPV)
+    min_sparsity_PPV = np.min(sparsity_PPV)
+    mean_sparsity_PPV = np.mean(sparsity_PPV)
+    median_sparsity_PPV = np.median(sparsity_PPV)
+    print(f'Max Sparsity PPV: {max_sparsity_PPV:.2f}')
+    print(f'Median PPV: {median_sparsity_PPV:.2f}')
+    print(f'Mean PPV: {mean_sparsity_PPV:.2f}')
+    print(f'Min PPV: {min_sparsity_PPV:.2f}')
