@@ -1,0 +1,51 @@
+    for wavelet in wavelets:
+      #print(wavelet)
+
+      # Calculate the CWT
+      [coefficients, frequencies] = pywt.cwt(X_training, scales, wavelet, dt)
+
+      #remove 10% of coefficients in each side to remove border effects
+      remove = coefficients.shape[-1]*0.1
+      remove = int(remove)
+      coefficients = coefficients[:,:,remove:-remove]
+
+      #add coefficients
+      if i > 0:
+        coefficients_all = np.concatenate((coefficients, coefficients_all), axis=0)
+      else:
+        coefficients_all = coefficients
+      i += 1
+
+    #General Ginis
+    #evaluate Gini Index
+    #print('GENERAL')
+    GI = gini_index_3d(coefficients_all)
+
+    max_GI = np.max(GI)
+    min_GI = np.min(GI)
+    mean_GI = np.mean(GI)
+    median_GI = np.median(GI)
+    print(f'Max Gini Index: {max_GI:.2f}')
+    print(f'Median Gini Index: {median_GI:.2f}')
+
+    # Calculate PPV
+    PPV = 0.1*0.1 + 0.9 * np.mean(coefficients_all > 0, axis=-1)
+    sparsity_PPV = 1/PPV
+
+    max_sparsity_PPV = np.max(sparsity_PPV)
+    min_sparsity_PPV = np.min(sparsity_PPV)
+    mean_sparsity_PPV = np.mean(sparsity_PPV)
+    median_sparsity_PPV = np.median(sparsity_PPV)
+    print(f'Max Sparsity PPV: {max_sparsity_PPV:.2f}')
+    print(f'Median PPV: {median_sparsity_PPV:.2f}')
+    print(f'Min PPV: {min_sparsity_PPV:.2f}')
+
+    print('\n')
+    print('----------------------------------')
+
+    #store in results
+    results.append([dataset,max_GI,min_GI,mean_GI,median_GI,max_sparsity_PPV,min_sparsity_PPV,mean_sparsity_PPV,median_sparsity_PPV])
+
+    #results to pandas
+    results_pd = pd.DataFrame(results,columns=['Dataset','Max_Gini_Index','Min_Gini_Index','Mean_Gini_Index','Median_Gini_Index','Max_PPV','Min_PPV','Mean_PPV','Median_PPV'])
+    results_pd.to_csv('results_wavelets_ppv_01.csv',index=False)
