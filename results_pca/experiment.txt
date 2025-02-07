@@ -1,0 +1,70 @@
+from sklearn.decomposition import PCA
+num_features = 10000
+
+results = []
+
+# for dataset in validation_datasets:
+for dataset in all_valid_datasets:
+
+    print(dataset)
+
+    # Convert the sktime datasets to numpy arrays
+    #X_training, Y_training, _ = load_classification(dataset,split='train') # depending on aeon version
+    X_training, Y_training = load_classification(dataset,split='train')
+    X_training = np.squeeze(X_training)
+
+    # X_test, Y_test, _ = load_classification(dataset,split='test') depending on aeon version
+    X_test, Y_test = load_classification(dataset,split='test')
+    X_test = np.squeeze(X_test)
+
+    #######################################################################################
+    # STAGE 1: DATA TRANSFORMATION WITH 1 LAYER ROCKET
+    #######################################################################################
+
+    # Generate kernels and transform
+    kernels = generate_kernels(X_training.shape[-1],num_features)
+    features = apply_kernels(X_training, kernels)
+
+
+    #######################################################################################
+    # STAGE 2: Get PCA over the features
+    #######################################################################################
+    # 1. Extract PPV features from 'features'
+    ppv_columns = np.arange(0, features.shape[1], 2)  # even indices
+    ppv_features = features[:, ppv_columns]
+
+    # 2. Apply PCA
+    n_components = 2000  # choose any number of components < # of PPV features
+
+    # n_components can't be greater than number of examples
+    if n_components > ppv_features.shape[0]:
+      n_components = ppv_features.shape[0]
+    pca = PCA(n_components=n_components, random_state=42)
+    ppv_features_pca = pca.fit_transform(ppv_features)
+
+    #get the number of variables to achieve 90% of accumulated variability
+    cumulative_variance_ratio = np.cumsum(pca.explained_variance_ratio_)
+    num_vars_to_90 = np.where(cumulative_variance_ratio > 0.9)[0][0]
+
+    #get the number of variables to achieve 95% of accumulated variability
+    cumulative_variance_ratio = np.cumsum(pca.explained_variance_ratio_)
+    num_vars_to_95 = np.where(cumulative_variance_ratio > 0.95)[0][0]
+
+    results.append([dataset,num_vars_to_90,num_vars_to_95])
+    print(  f"variables to 90%: {num_vars_to_90}")
+    print(  f"variables to 95%: {num_vars_to_95}")
+    print('\n')
+
+
+    results_pd = pd.DataFrame(results,columns=['dataset','num_vars_to_90','num_vars_to_95'])
+    path = '/content/drive/MyDrive/Random Weights/Experimentos formales/Experimentos paper/'
+    results_pd.to_csv(path + 'results_PCA.csv',index=False)
+
+  
+
+
+
+
+
+
+
